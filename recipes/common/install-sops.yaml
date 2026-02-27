@@ -1,0 +1,25 @@
+---
+# yaml-language-server: $schema=https://schema.blue-build.org/module-list-v1.json
+
+modules:
+  - type: github-release
+    source: local
+    repo: getsops/sops
+    tag: latest
+    dest_dir: /var/cache/downloads
+    assets: 
+      - sops-*.linux.amd64
+      - sops-*.checksums.txt
+      - sops-*.checksums.pem
+      - sops-*.checksums.sig
+    run: |
+      cosign verify-blob "sops-${TAG}.checksums.txt" \
+        --certificate "sops-${TAG}.checksums.pem" \
+        --signature "sops-${TAG}.checksums.sig" \
+        --certificate-identity-regexp=https://github.com/getsops \
+        --certificate-oidc-issuer=https://token.actions.githubusercontent.com
+      
+      sha256sum -c "sops-${TAG}.checksums.txt" --ignore-missing
+
+      mv "sops-${TAG}.linux.amd64" /usr/bin/sops
+      chmod +x /usr/bin/sops

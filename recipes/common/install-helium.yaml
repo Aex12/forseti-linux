@@ -1,0 +1,20 @@
+---
+# yaml-language-server: $schema=https://schema.blue-build.org/module-list-v1.json
+
+modules:
+  - type: github-release
+    source: local
+    repo: imputnet/helium-linux
+    tag: latest
+    dest_dir: /var/cache/downloads
+    assets: 
+      - helium-*-x86_64_linux.tar.xz
+      - helium-*-x86_64_linux.tar.xz.asc
+    run: |
+      gpg --import /var/signatures/helium.pgp
+      gpg --verify "helium-${TAG}-x86_64_linux.tar.xz.asc" "helium-${TAG}-x86_64_linux.tar.xz"
+      mkdir -p /usr/lib64/helium
+      tar -xpf "helium-${TAG}-x86_64_linux.tar.xz" -C /usr/lib64/helium --strip-components=1
+      ln -s /usr/lib64/helium/helium /usr/bin/helium
+      mv /usr/lib64/helium/helium.desktop /usr/share/applications/helium.desktop
+      mv /usr/lib64/helium/product_logo_256.png /usr/share/icons/hicolor/256x256/apps/helium.png
